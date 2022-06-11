@@ -7,7 +7,7 @@
 using Toybox.WatchUi;
 using Toybox.Graphics;
 
-class StartView extends WatchUi.View {
+class MainView extends WatchUi.View {
 
     function initialize() {
         View.initialize();
@@ -24,6 +24,13 @@ class StartView extends WatchUi.View {
     function onUpdate(dc) {
         dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_BLACK);
         dc.clear();
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+        dc.clear();
+        dc.drawText(
+            dc.getWidth() / 2, dc.getHeight() / 2, Graphics.FONT_MEDIUM,
+            "ENTER to start",
+            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+        );
     }
 }
 
