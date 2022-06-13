@@ -17,16 +17,18 @@ class BitWareApp extends Application.AppBase {
 
     // onStart() is called on application start up
     function onStart(state) {
-        var entropy = Cryptography.randomBytes(64l);
-        System.print(BytesModule.base16ToBytes("80000000000000000000000000000080"));
+        // var entropy = Cryptography.randomBytes(64l);
+        var bytes = BytesModule.base16ToBytes("80000000000000000000000000000080");
 
-        // var sha1 = new Cryptography.Hash({
-        //     :algorithm => Cryptography.HASH_SHA256
-        // });
+        System.print(bytes);
 
-        // sha1.update(entropy);
-        // var res = sha1.digest();
-        // System.print(res);
+        var sha1 = new Cryptography.Hash({
+            :algorithm => Cryptography.HASH_SHA256
+        });
+
+        sha1.update(bytes);
+        var res = sha1.digest();
+        System.print(BytesModule.bytesToBase16(res));
     }
 
     // onStop() is called when your application is exiting

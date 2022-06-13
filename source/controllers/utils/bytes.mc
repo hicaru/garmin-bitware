@@ -52,7 +52,7 @@ module BytesModule {
             l = l + 1;
         }
         var cs = string.toCharArray();
-        var bs = new [l/2];
+        var bs = new [l/2]b;
         for (var i = 0; i < cs.size(); i += 2) {
             bs[i/2] = hex(cs[i]) << 4 | hex(cs[i+1]);
         }
