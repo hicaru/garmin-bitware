@@ -1,6 +1,7 @@
 using Toybox.Lang;
 using Toybox.StringUtil;
 using Toybox.System;
+using Toybox.Test;
 
 
 module BytesModule {
@@ -60,16 +61,70 @@ module BytesModule {
     }
 
     (:glance)
+    function bufferCopy(source, target, targetStart, sourceStart, sourceEnd) {
+        // Copy 0 bytes; we're done
+        if (sourceEnd == sourceStart) {
+            return target;
+        }
+
+        if (target.size() == 0 || source.size() == 0) {
+            return target;
+        }
+
+        // Fatal error conditions
+        if (targetStart < 0) {
+            throw new RangeErrorException("Index out of range");
+        }
+        if (sourceStart < 0 || sourceStart >= source.size()) {
+            throw new RangeErrorException("Index out of range");
+        }
+        if (sourceEnd < 0) {
+            throw new RangeErrorException("sourceEnd out of bounds");
+        }
+
+          // Are we oob?
+        if (sourceEnd > source.size()) {
+            sourceEnd = source.size();
+        }
+
+        if (target.size() - targetStart < sourceEnd - sourceStart) {
+            sourceEnd = target.size() - targetStart + sourceStart;
+        }
+
+        var newTarget = target;
+
+        for (var index = sourceStart; index < sourceEnd; index++) {
+            newTarget[index] = source[index];
+        }
+
+        return newTarget;
+    }
+
+    (:glance)
     class UnexpectedSymbolException extends Lang.Exception {
-        var symbol_;
+        private const _symbol;
 
         function initialize(symbol) {
             Exception.initialize();
-            symbol_ = symbol;
+            self._symbol = symbol;
         }
 
         function getErrorMessage() {
-            return "Unexpected symbol: " + symbol_;
+            return "Unexpected symbol: " + self._symbol;
+        }
+    }
+
+        (:glance)
+    class RangeErrorException extends Lang.Exception {
+        private const _msg;
+
+        function initialize(msg) {
+            Exception.initialize();
+            self._msg = msg;
+        }
+
+        function getErrorMessage() {
+            return self._msg;
         }
     }
 }

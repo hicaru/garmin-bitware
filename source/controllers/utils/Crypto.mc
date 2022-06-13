@@ -2,10 +2,12 @@ using Toybox.Lang;
 using Toybox.StringUtil;
 using Toybox.Cryptography;
 using Toybox.System;
+using Toybox.Test;
 using BytesModule;
 
 
 module CryptoModule {
+    const MAX_ALLOC = 1073741823; 
     // (:glance)
     // function sha256() {
         // var entropy = Cryptography.randomBytes(64l);
@@ -50,5 +52,14 @@ module CryptoModule {
         }
 
         return sha256(key_opad.addAll(sha256(key_ipad.addAll(text))));
+    }
+
+    (:glance)
+    function pbkdf2(password, salt, iterations, keylen) {
+        Test.assert(keylen > 0);
+        Test.assert(keylen < MAX_ALLOC);
+
+        var DK = new [keylen]b;
+        var block1 = new [salt.length + 4]b;
     }
 }
