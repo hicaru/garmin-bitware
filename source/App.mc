@@ -7,6 +7,7 @@
 using Toybox.Application;
 using Toybox.Cryptography;
 using BytesModule;
+using CryptoModule;
 
 
 class BitWareApp extends Application.AppBase {
@@ -17,18 +18,11 @@ class BitWareApp extends Application.AppBase {
 
     // onStart() is called on application start up
     function onStart(state) {
-        // var entropy = Cryptography.randomBytes(64l);
-        var bytes = BytesModule.base16ToBytes("80000000000000000000000000000080");
+        var secret = BytesModule.base16ToBytes("80000000000000000000000000000080");
+        var data = BytesModule.base16ToBytes("30dfe64740ed459ea115b517bd737bbadf21b838");
+        var hmac = CryptoModule.hmacSHA2(secret, data);
 
-        System.print(bytes);
-
-        var sha1 = new Cryptography.Hash({
-            :algorithm => Cryptography.HASH_SHA256
-        });
-
-        sha1.update(bytes);
-        var res = sha1.digest();
-        System.print(BytesModule.bytesToBase16(res));
+        System.print(BytesModule.bytesToBase16(hmac));
     }
 
     // onStop() is called when your application is exiting

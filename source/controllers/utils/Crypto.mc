@@ -8,6 +8,7 @@ using BytesModule;
 module CryptoModule {
     // (:glance)
     // function sha256() {
+        // var entropy = Cryptography.randomBytes(64l);
     //     var bytes = BytesModule.base16ToBytes("80000000000000000000000000000080");
 
     //     System.print(bytes);
@@ -39,8 +40,8 @@ module CryptoModule {
         }
 
         // MAC = H(K XOR opad, H(K XOR ipad, text))
-        var key_ipad = new [BS];
-        var key_opad = new [BS];
+        var key_ipad = new [BS]b;
+        var key_opad = new [BS]b;
 
         for (var i = 0; i < BS; i++) {
             var k = i < key.size() ? key[i] : 0x00;
