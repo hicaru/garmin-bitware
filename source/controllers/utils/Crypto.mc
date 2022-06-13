@@ -55,11 +55,15 @@ module CryptoModule {
     }
 
     (:glance)
-    function pbkdf2(password, salt, iterations, keylen) {
+    function pbkdf2(password as ByteArray, salt as ByteArray, iterations, keylen) {
         Test.assert(keylen > 0);
         Test.assert(keylen < MAX_ALLOC);
 
         var DK = new [keylen]b;
-        var block1 = new [salt.length + 4]b;
+        var block1 = new [salt.size() + 4]b;
+
+        block1 = BytesModule.bufferCopy(salt, block1, 0, 0, salt.size());
+
+        return block1;
     }
 }
