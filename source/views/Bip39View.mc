@@ -6,25 +6,69 @@
 
 using Toybox.WatchUi;
 using Toybox.Graphics;
-
+using Toybox.Math;
 using Toybox.Cryptography;
+
 using BytesModule;
 using CryptoModule;
 
+
 class Bip39View extends WatchUi.View {
+    private const _steps = 20;
+    private var _type = POS;
     var screen_shape;
+
+    // state
+    private var _salt as ByteArray;
+    private var _password as ByteArray;
+    private var _DK as ByteArray;
+    private var _block1 as ByteArray;
+    private var _T as ByteArray;
+    private var _hLen = 32;
+    private var _keylen = 256;
+    private var _iterations = 10;
+    private var _length = Math.ceil(self._keylen / self._hLen);
+
+    private var _destPos = 0;
+    private var _next_index = 1;
+    private var _iterations_index = 1;
+    // state
+
+    enum {
+        NONE,
+        POS,
+        BLOCK
+    }
 
     function initialize() {
         View.initialize();
         screen_shape = System.getDeviceSettings().screenShape;
+        self._DK = new [self._keylen]b;
+        self._salt = [48, 223, 230, 71, 64, 237, 69, 158, 161, 21, 181, 23, 189, 115, 123, 186, 223, 33, 184, 56]b;
+        self._password = [7, 218, 61, 69, 176, 241, 57, 0, 131, 9, 122, 149, 168, 145, 95, 194, 246, 176, 108, 111]b;
+        self._block1 = new [self._salt.size() + 4]b;
+        self._block1 = BytesModule.bufferCopy(self._salt, self._block1, 0, 0, self._salt.size());
     }
 
-    //! Restore the state of the app and prepare the view to be shown
     function onShow() {
         log(DEBUG, "Show Bip39View");
     }
 
     function onUpdate(dc) {
+        switch(self._type) {
+            case NONE:
+                log(DEBUG, "NONE");
+                break;
+            case POS:
+                self._nextDestPost();
+                break;
+            case BLOCK:
+                self._mixBytes();
+                break;
+            default:
+                break;
+        }
+
         dc.clear();
         drawProgress(dc, 10, 30, Graphics.COLOR_BLUE);
     }
@@ -45,6 +89,47 @@ class Bip39View extends WatchUi.View {
             }
         } else {
             dc.fillRectangle(0, 0, ((value * dc.getWidth()) / max), dc.getHeight() / 40);
+        }
+    }
+
+    private function _mixBytes() {
+        var U = self._T;
+        var counter = 0;
+
+        for (var j = 1; self._iterations_index < self._iterations; self._iterations_index++) {
+            U = CryptoModule.hmacSHA2(self._password, U);
+            self._T = BytesModule.xorArray(U, self._T, self._hLen);
+
+            if (counter > _steps) {
+                WatchUi.requestUpdate();
+                return;
+            }
+
+            counter++;
+        }
+
+        if (self._iterations_index == self._iterations) {
+            self._DK = BytesModule.bufferCopy(self._T, self._DK, self._destPos, 0, self._T.size());
+            self._destPos += self._hLen;
+            self._next_index++;
+            self._iterations_index = 1; // reset index
+            self._type = POS;
+        }
+
+        WatchUi.requestUpdate();
+    }
+
+    private function _nextDestPost() {
+        if (self._next_index <= self._length) {
+            self._block1 = BytesModule.writeUint32BE(self._block1, self._next_index, self._salt.size());
+            self._T = CryptoModule.hmacSHA2(self._password, self._block1);
+            self._type = BLOCK;
+
+            self._mixBytes();
+        } else {
+            // STOP loop.
+            self._type = NONE;
+            log(DEBUG, self._DK);
         }
     }
 }

@@ -113,6 +113,17 @@ module BytesModule {
     }
 
     (:glance)
+    function xorArray(source as ByteArray, target as ByteArray, length) {
+        var newTarget = target;
+
+        for (var k = 0; k < length; k++) {
+            newTarget[k] ^= source[k];
+        }
+
+        return newTarget;
+    }
+
+    (:glance)
     class UnexpectedSymbolException extends Lang.Exception {
         var _symbol;
 
