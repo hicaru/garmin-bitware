@@ -94,15 +94,27 @@ module BytesModule {
         var newTarget = target;
 
         for (var index = sourceStart; index < sourceEnd; index++) {
-            newTarget[index] = source[index];
+            newTarget[targetStart + index] = source[index];
         }
 
         return newTarget;
     }
 
     (:glance)
+    function writeUint32BE(source as ByteArray, value, offset) {
+        offset = offset >> 0;
+
+        source[offset] = (value >> 24);
+        source[offset + 1] = (value >> 16);
+        source[offset + 2] = (value >> 8);
+        source[offset + 3] = (value & 0xff);
+
+        return source;
+    }
+
+    (:glance)
     class UnexpectedSymbolException extends Lang.Exception {
-        private const _symbol;
+        var _symbol;
 
         function initialize(symbol) {
             Exception.initialize();
@@ -114,9 +126,9 @@ module BytesModule {
         }
     }
 
-        (:glance)
+    (:glance)
     class RangeErrorException extends Lang.Exception {
-        private const _msg;
+        var _msg;
 
         function initialize(msg) {
             Exception.initialize();

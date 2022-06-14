@@ -2,6 +2,7 @@ using Toybox.Lang;
 using Toybox.StringUtil;
 using Toybox.Cryptography;
 using Toybox.System;
+using Toybox.Math;
 using Toybox.Test;
 using BytesModule;
 
@@ -59,11 +60,34 @@ module CryptoModule {
         Test.assert(keylen > 0);
         Test.assert(keylen < MAX_ALLOC);
 
+        var hLen = 32;
+
         var DK = new [keylen]b;
         var block1 = new [salt.size() + 4]b;
 
         block1 = BytesModule.bufferCopy(salt, block1, 0, 0, salt.size());
 
-        return block1;
+        var destPos = 0;
+        var l = Math.ceil(keylen / hLen);
+
+        for (var i = 1; i <= l; i++) {
+            block1 = BytesModule.writeUint32BE(block1, i, salt.size());
+
+            var T = hmacSHA2(password, block1);
+            var U = T;
+
+            for (var j = 1; j < iterations; j++) {
+                U = hmacSHA2(password, U);
+                for (var k = 0; k < hLen; k++) {
+                    T[k] ^= U[k];
+                }
+            }
+
+            DK = BytesModule.bufferCopy(T, DK, destPos, 0, T.size());
+
+            destPos += hLen;
+        }
+
+        return DK;
     }
 }
