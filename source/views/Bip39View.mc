@@ -26,12 +26,14 @@ class Bip39View extends WatchUi.View {
     private var _T as ByteArray;
     private var _hLen = 32;
     private var _keylen = 256;
-    private var _iterations = 10;
+    private var _iterations = 100;
     private var _length = Math.ceil(self._keylen / self._hLen);
 
     private var _destPos = 0;
     private var _next_index = 1;
     private var _iterations_index = 1;
+    private var _percent = 1;
+    private var _max = self._iterations;
     // state
 
     enum {
@@ -70,7 +72,8 @@ class Bip39View extends WatchUi.View {
         }
 
         dc.clear();
-        drawProgress(dc, 10, 30, Graphics.COLOR_BLUE);
+
+        drawProgress(dc, self._percent, self._max, Graphics.COLOR_BLUE);
     }
 
     function drawProgress(dc, value, max, codeColor) {
@@ -97,15 +100,20 @@ class Bip39View extends WatchUi.View {
         var counter = 0;
 
         for (var j = 1; self._iterations_index < self._iterations; self._iterations_index++) {
-            U = CryptoModule.hmacSHA2(self._password, U);
-            self._T = BytesModule.xorArray(U, self._T, self._hLen);
-
-            if (counter > _steps) {
+            /// TODO: Bug doesn't mach.
+            if (counter > self._steps) {
+                // logf(DEBUG, "counter: $1$, steps: $2$, index: $3$", [counter, self._steps, self._iterations_index]);
+                self._iterations_index--;
+                self._DK = BytesModule.bufferCopy(self._T, self._DK, self._destPos, 0, self._T.size());
                 WatchUi.requestUpdate();
                 return;
             }
 
             counter++;
+            self._percent++;
+
+            U = CryptoModule.hmacSHA2(self._password, U);
+            self._T = BytesModule.xorArray(U, self._T, self._hLen);
         }
 
         if (self._iterations_index == self._iterations) {
