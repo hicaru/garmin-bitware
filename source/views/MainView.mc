@@ -12,9 +12,11 @@ using BytesModule;
 using CryptoModule;
 
 class MainView extends WatchUi.View {
+    var screen_shape;
 
     function initialize() {
         View.initialize();
+        screen_shape = System.getDeviceSettings().screenShape;
     }
 
     function onLayout(dc) {
@@ -28,6 +30,7 @@ class MainView extends WatchUi.View {
     function onUpdate(dc) {
         dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_BLACK);
         dc.clear();
+        // drawProgress(dc, 10, 30, Graphics.COLOR_GREEN);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.clear();
         dc.drawText(
@@ -36,25 +39,24 @@ class MainView extends WatchUi.View {
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
     }
-}
 
+    function drawProgress(dc, value, max, codeColor) {
+        dc.setPenWidth(dc.getHeight() / 40);
+        dc.setColor(codeColor, Graphics.COLOR_TRANSPARENT);
+        if (self.screen_shape == System.SCREEN_SHAPE_ROUND) {
+            // Available from 3.2.0
+            if (dc has :setAntiAlias) {
+                dc.setAntiAlias(true);
+            }
 
-class MainViewDelegate extends WatchUi.BehaviorDelegate {
-    function initialize() {
-        BehaviorDelegate.initialize();
-    }
-
-    function onKey(event) {
-        // var key = event.getKey();
-        // // System.print(key);
-
-        // var salt = [48, 223, 230, 71, 64, 237, 69, 158, 161, 21, 181, 23, 189, 115, 123, 186, 223, 33, 184, 56]b;
-        // var key = [7, 218, 61, 69, 176, 241, 57, 0, 131, 9, 122, 149, 168, 145, 95, 194, 246, 176, 108, 111]b;
-        // var test = CryptoModule.pbkdf2(key, salt, 10, 256);
-
-        // log(DEBUG, test.toString());
-    }
-
-    function onSelect() {
+            dc.drawArc(dc.getWidth() / 2, dc.getHeight() / 2, (dc.getWidth() / 2) - 2, Graphics.ARC_COUNTER_CLOCKWISE, 90, ((value * 360) / max) + 90);
+            // Available from 3.2.0
+            if (dc has :setAntiAlias) {
+                dc.setAntiAlias(false);
+            }
+        } else {
+            dc.fillRectangle(0, 0, ((value * dc.getWidth()) / max), dc.getHeight() / 40);
+        }
     }
 }
+

@@ -19,6 +19,7 @@ class BitWareApp extends Application.AppBase {
 
     // onStart() is called on application start up
     function onStart(state) {
+        log(DEBUG, "App onStart");
         // var secret = BytesModule.base16ToBytes("80000000000000000000000000000080");
         // var data = BytesModule.base16ToBytes("30dfe64740ed459ea115b517bd737bbadf21b838");
         // var hmac = CryptoModule.hmacSHA2(secret, data);
@@ -41,16 +42,15 @@ class BitWareApp extends Application.AppBase {
 
     // onStop() is called when your application is exiting
     function onStop(state) {
+        log(DEBUG, "App onStop");
     }
 
     // Return the initial view of your application here
     function getInitialView() {
         log(DEBUG, "App InitialView");
-        return [ new MainView(), new MainViewDelegate(), new WidgetGlanceView() ];
+        return [
+            new MainView(),
+            new MainViewDelegate()
+        ];
     }
-
-    // function getGlanceView() {
-    //     log(DEBUG, "App GlanceView");
-    //     return [ new WidgetGlanceView() ];
-    // }
 }
