@@ -24,9 +24,10 @@ class Bip39View extends WatchUi.View {
     private var _DK as ByteArray;
     private var _block1 as ByteArray;
     private var _T as ByteArray;
+    private var _U as ByteArray;
     private var _hLen = 32;
     private var _keylen = 256;
-    private var _iterations = 100;
+    private var _iterations = 2048;
     private var _length = Math.ceil(self._keylen / self._hLen);
 
     private var _destPos = 0;
@@ -96,24 +97,20 @@ class Bip39View extends WatchUi.View {
     }
 
     private function _mixBytes() {
-        var U = self._T;
         var counter = 0;
 
         for (var j = 1; self._iterations_index < self._iterations; self._iterations_index++) {
-            /// TODO: Bug doesn't mach.
-            if (counter > self._steps) {
-                // logf(DEBUG, "counter: $1$, steps: $2$, index: $3$", [counter, self._steps, self._iterations_index]);
-                self._iterations_index--;
-                self._DK = BytesModule.bufferCopy(self._T, self._DK, self._destPos, 0, self._T.size());
-                WatchUi.requestUpdate();
-                return;
-            }
+            self._U = CryptoModule.hmacSHA2(self._password, self._U);
 
-            counter++;
             self._percent++;
+            counter++;
 
-            U = CryptoModule.hmacSHA2(self._password, U);
-            self._T = BytesModule.xorArray(U, self._T, self._hLen);
+            self._T = BytesModule.xorArray(self._U, self._T, self._hLen);
+
+            if (counter >= self._steps) {
+                self._iterations_index++;
+                return WatchUi.requestUpdate();
+            }
         }
 
         if (self._iterations_index == self._iterations) {
@@ -124,19 +121,23 @@ class Bip39View extends WatchUi.View {
             self._type = POS;
         }
 
-        WatchUi.requestUpdate();
+        return WatchUi.requestUpdate();
     }
 
     private function _nextDestPost() {
         if (self._next_index <= self._length) {
             self._block1 = BytesModule.writeUint32BE(self._block1, self._next_index, self._salt.size());
             self._T = CryptoModule.hmacSHA2(self._password, self._block1);
+            self._U = self._T;
             self._type = BLOCK;
 
             self._mixBytes();
         } else {
             // STOP loop.
             self._type = NONE;
+            self._U = new [0];
+            self._T = new [0];
+            self._block1 = new [0];
             log(DEBUG, self._DK);
         }
     }
