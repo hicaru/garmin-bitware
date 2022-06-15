@@ -8,6 +8,7 @@ using Toybox.Application;
 using Toybox.Cryptography;
 using BytesModule;
 using CryptoModule;
+using BIP39Module;
 
 
 (:glance)
@@ -20,8 +21,13 @@ class BitWareApp extends Application.AppBase {
     // onStart() is called on application start up
     function onStart(state) {
         log(DEBUG, "App onStart");
+        
         // var secret = BytesModule.base16ToBytes("80000000000000000000000000000080");
-        // var data = BytesModule.base16ToBytes("30dfe64740ed459ea115b517bd737bbadf21b838");
+        var data = BytesModule.base16ToBytes("30dfe64740ed459ea115b517bd737bbadf21b838");
+        BIP39Module.entropyToMnemonic(data);
+
+        // log(DEBUG, checksumBits);
+
         // var hmac = CryptoModule.hmacSHA2(secret, data);
 
         // System.print(BytesModule.bytesToBase16(hmac));

@@ -30,6 +30,37 @@ module BytesModule {
     }
 
     (:glance)
+    function convertToBinary(number) {
+        var num = number;
+        var binary = (num % 2).toString();
+
+        for (; num > 1; ) {
+            num = num / 2;
+            binary = (num % 2) + (binary);
+        }
+
+        return binary;
+    }
+
+    (:glance)
+    function lpad(str as String, padString as String, length as Number) {
+        while (str.length() < length) {
+            str = padString + str;
+        }
+        return str;
+    }
+
+    (:glance)
+    function bytesToBinary(bytes as ByteArray) {
+        var binary = "";
+        for (var i = 0; i < bytes.size(); i++) {
+            binary += lpad(convertToBinary(bytes[i]), "0", 8);
+        }
+
+        return binary;
+    }
+
+    (:glance)
     function bytesToBase16(bytes) {
         var str = "";
         for (var i = 0; i < bytes.size(); i++) {
