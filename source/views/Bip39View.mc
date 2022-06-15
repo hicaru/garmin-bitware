@@ -33,8 +33,7 @@ class Bip39View extends WatchUi.View {
     private var _destPos = 0;
     private var _next_index = 1;
     private var _iterations_index = 1;
-    private var _percent = 1;
-    private var _max = self._iterations;
+    private var _max = self._iterations * self._length;
     // state
 
     enum {
@@ -74,7 +73,18 @@ class Bip39View extends WatchUi.View {
 
         dc.clear();
 
-        drawProgress(dc, self._percent, self._max, Graphics.COLOR_BLUE);
+        var percent = ((self._next_index * self._iterations * 100) / self._max);
+        drawProgress(
+            dc,
+            percent,
+            100,
+            Graphics.COLOR_BLUE
+        );
+        dc.drawText(
+            dc.getWidth() / 2, dc.getHeight() / 2, Graphics.FONT_MEDIUM,
+            "Loading...",
+            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+        );
     }
 
     function drawProgress(dc, value, max, codeColor) {
@@ -102,7 +112,6 @@ class Bip39View extends WatchUi.View {
         for (var j = 1; self._iterations_index < self._iterations; self._iterations_index++) {
             self._U = CryptoModule.hmacSHA2(self._password, self._U);
 
-            self._percent++;
             counter++;
 
             self._T = BytesModule.xorArray(self._U, self._T, self._hLen);
