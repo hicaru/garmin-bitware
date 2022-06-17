@@ -24,8 +24,9 @@ class BitWareApp extends Application.AppBase {
         
         // var secret = BytesModule.base16ToBytes("80000000000000000000000000000080");
         var entropy = Cryptography.randomBytes(32l);
-        log(DEBUG, entropy.size());
-        BIP39Module.entropyToMnemonic(entropy);
+        var words = BIP39Module.entropyToMnemonic(entropy);
+
+        log(DEBUG, words);
 
         // log(DEBUG, checksumBits);
 
