@@ -9,7 +9,7 @@ using Toybox.Cryptography;
 using BytesModule;
 using CryptoModule;
 using BIP39Module;
-
+using HashModule;
 
 (:glance)
 class BitWareApp extends Application.AppBase {
@@ -22,11 +22,20 @@ class BitWareApp extends Application.AppBase {
     function onStart(state) {
         log(DEBUG, "App onStart");
         
-        // var secret = BytesModule.base16ToBytes("80000000000000000000000000000080");
-        var entropy = Cryptography.randomBytes(32l);
-        var words = BIP39Module.entropyToMnemonic(entropy);
+        var hash = new HashModule.Sha512();
+        var secret = BytesModule.base16ToBytes("80000000000000000000000000000080");
 
-        log(DEBUG, words);
+        hash.update(secret);
+
+        var bytes = hash.digest();
+
+        log(DEBUG, bytes);
+
+
+        // var entropy = Cryptography.randomBytes(32l);
+        // var words = BIP39Module.entropyToMnemonic(entropy);
+
+        // log(DEBUG, words);
 
         // log(DEBUG, checksumBits);
 

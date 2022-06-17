@@ -151,8 +151,8 @@ module BytesModule {
 
     (:glance)
     function readInt32BE(source as ByteArray, offset) {
+        var length = source.size();
         offset = offset >> 0;
-        length = source.size();
 
         if ((offset % 1) != 0 || offset < 0) {
             throw new RangeErrorException("offset is not uint");
@@ -180,13 +180,6 @@ module BytesModule {
 
     (:glance)
     function fillArray(arr, value, start, end) {
-        if (start == null) {
-            start = 0;
-        }
-        if (end == null) {
-            end = arr.size();
-        }
-
         var newArr = arr;
 
         for (var index = start; index < end; index++) {

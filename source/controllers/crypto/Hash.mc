@@ -48,7 +48,7 @@ module HashModule {
         0x4cc5d4be, 0xcb3e42b6, 0x597f299c, 0xfc657e2a,
         0x5fcb6fab, 0x3ad6faec, 0x6c44198c, 0x4a475817
     ];
-    var W = new [160];
+    // var W = new [160];
 
     function Ch(x, y, z) {
         return z ^ (x & (y ^ z));
@@ -86,84 +86,14 @@ module HashModule {
         return (a >> 0) < (b >> 0) ? 1 : 0;
     }
 
-    (:glance)
-    class Hash {
+
+    class Sha512 {
+        private var _w = new [160];
+
         private var _block as ByteArray;
         private var _finalSize as Number;
         private var _blockSize as Number;
         private var _len as Number;
-
-        function initialize(blockSize as Number, finalSize as Number) {
-            self._block = new [blockSize]b;
-            self._finalSize = finalSize;
-            self._blockSize = blockSize;
-            self._len = 0;
-        }
-
-        public function update(data as ByteArray) {
-            var block = self._block;
-            var blockSize = self._blockSize;
-            var length = data.size();
-            var accum = self._len;
-
-            for (var offset = 0; offset < length;) {
-                var assigned = accum % blockSize;
-                var remainder = MathModule.min(length - offset, blockSize - assigned);
-
-                for (var i = 0; i < remainder; i++) {
-                    block[assigned + i] = data[offset + i];
-                }
-
-                accum += remainder;
-                offset += remainder;
-
-                if ((accum % blockSize) == 0) {
-                    self._update(block);
-                }
-            }
-
-            self._len += length;
-        }
-
-        public function digest() {
-            var rem = self._len % self._blockSize;
-
-            self._block[rem] = 0x80;
-
-            // zero (rem + 1) trailing bits, where (rem + 1) is the smallest
-            // non-negative solution to the equation (length + 1 + (rem + 1)) === finalSize mod blockSize
-            self._block = BytesModule.fillArray(self._block, rem + 1);
-
-            if (rem >= self._finalSize) {
-                self._update(self._block);
-                self._block = BytesModule.fillArray(self._block);
-            }
-
-            var bits = self._len * 8;
-
-            self._block = BytesModule.writeUint32BE(
-                self._block,
-                self._blockSize - 4,
-                self._block.size()
-            );
-
-            self._update(self._block);
-
-            return self._hash();
-        }
-
-        protected function _update() {
-            throw new SubClassException(SUB_CLASS_ERROR);
-        }
-
-        protected function _hash() {
-            throw new SubClassException(SUB_CLASS_ERROR);
-        }
-    }
-
-
-    class Sha512 extends Hash {
-        private var _w = W;
 
         private var _ah = 0x6a09e667;
         private var _bh = 0xbb67ae85;
@@ -184,10 +114,13 @@ module HashModule {
         private var _hl = 0x137e2179;
 
         function initialize() {
-            Hash.initialize(128, 112);
+            self._finalSize = 112;
+            self._blockSize = 128;
+            self._block = new [self._blockSize]b;
+            self._len = 0;
         }
 
-        function _update(M) {
+        private function _update(M) {
             var W = self._w;
 
             var Wil;
@@ -211,12 +144,14 @@ module HashModule {
             var gl = self._gl | 0;
             var hl = self._hl | 0;
 
-            for (var i = 0; i < 32; i += 2) {
+            var i = 0;
+
+            for (; i < 32; i += 2) {
                 W[i] = BytesModule.readInt32BE(M, i * 4);
                 W[i + 1] = BytesModule.readInt32BE(M, i * 4 + 4);
             }
 
-            for (var i = 0; i < 160; i += 2) {
+            for (; i < 160; i += 2) {
                 var xh = W[i - 15 * 2];
                 var xl = W[i - 15 * 2 + 1];
                 var gamma0 = Gamma0(xh, xl);
@@ -315,9 +250,13 @@ module HashModule {
             self._hh = (self._hh + hh + getCarry(self._hl, hl)) | 0;
         }
 
-        function _hash() {
+        private function _hash() {
             var H = new [64]b;
 
+
+// TODO
+// Error: Unhandled Exception
+// Exception: Number is too large to fit within a byte
             H = BytesModule.writeInt64BE(H, self._ah, self._al, 0);
             H = BytesModule.writeInt64BE(H, self._bh, self._bl, 8);
             H = BytesModule.writeInt64BE(H, self._ch, self._cl, 16);
@@ -328,6 +267,59 @@ module HashModule {
             H = BytesModule.writeInt64BE(H, self._hh, self._hl, 56);
 
             return H;
+        }
+
+        public function update(data as ByteArray) {
+            var block = self._block;
+            var blockSize = self._blockSize;
+            var length = data.size();
+            var accum = self._len;
+
+            for (var offset = 0; offset < length;) {
+                var assigned = accum % blockSize;
+                var remainder = MathModule.min(length - offset, blockSize - assigned);
+
+                for (var i = 0; i < remainder; i++) {
+                    block[assigned + i] = data[offset + i];
+                }
+
+                accum += remainder;
+                offset += remainder;
+
+                if ((accum % blockSize) == 0) {
+                    self._update(block);
+                }
+            }
+
+            self._len += length;
+        }
+
+        public function digest() {
+            var rem = self._len % self._blockSize;
+
+            self._block[rem] = 0x80;
+
+            // zero (rem + 1) trailing bits, where (rem + 1) is the smallest
+            // non-negative solution to the equation (length + 1 + (rem + 1)) === finalSize mod blockSize
+            self._block = BytesModule.fillArray(self._block, rem + 1, 0, self._block.size());
+
+            if (rem >= self._finalSize) {
+                self._update(self._block);
+                self._block = BytesModule.fillArray(self._block, 0, 0, self._block.size());
+            }
+
+            var bits = self._len * 8;
+
+            // uint32
+            self._block = BytesModule.writeUint32BE(
+                self._block,
+                bits,
+                self._blockSize - 4
+            );
+
+            self._update(self._block);
+
+            return self._hash();
         }
     }
 
