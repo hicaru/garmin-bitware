@@ -155,6 +155,24 @@ module BytesModule {
     }
 
     (:glance)
+    function fillArray(arr, value, start, end) {
+        if (start == null) {
+            start = 0;
+        }
+        if (end == null) {
+            end = arr.size();
+        }
+
+        var newArr = arr;
+
+        for (var index = start; index < end; index++) {
+            newArr[index] = value;
+        }
+
+        return newArr;
+    }
+
+    (:glance)
     class UnexpectedSymbolException extends Lang.Exception {
         var _symbol;
 

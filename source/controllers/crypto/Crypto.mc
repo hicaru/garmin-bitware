@@ -27,19 +27,7 @@ module CryptoModule {
     // }
 
     (:glance)
-    class Hash {
-        public function sha256(bytes) {
-            var sha2 = new Cryptography.Hash({
-                :algorithm => Cryptography.HASH_SHA256
-            });
-
-            sha2.update(bytes);
-            return sha2.digest();
-        }
-    }
-
-    (:glance)
-    function sha512(bytes) {
+    function sha256(bytes) {
         var sha2 = new Cryptography.Hash({
             :algorithm => Cryptography.HASH_SHA256
         });
@@ -50,10 +38,9 @@ module CryptoModule {
 
     (:glance)
     function hmacSHA2(key, text) {
-        var hash = new Hash();
         var BS = 64;
         if (key.size() > BS) {
-            key = hash.sha256(key);
+            key = sha256(key);
         }
 
         // MAC = H(K XOR opad, H(K XOR ipad, text))
@@ -66,7 +53,7 @@ module CryptoModule {
             key_opad[i] = k ^ 0x5C;
         }
 
-        return hash.sha256(key_opad.addAll(hash.sha256(key_ipad.addAll(text))));
+        return sha256(key_opad.addAll(sha256(key_ipad.addAll(text))));
     }
 
     (:glance)

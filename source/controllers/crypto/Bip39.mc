@@ -25,10 +25,9 @@ module BIP39Module {
     function deriveChecksumBits(entropy as ByteArray) {
         var ENT = entropy.size() * 8;
         var CS = ENT / 32;
-        var hash = new CryptoModule.Hash();
-        var hash256 = hash.sha256(entropy);
+        var hash = CryptoModule.sha256(entropy);
 
-        return BytesModule.bytesToBinary(hash256).substring(0, CS);
+        return BytesModule.bytesToBinary(hash).substring(0, CS);
     }
 
     (:glance)
