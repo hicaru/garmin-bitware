@@ -126,6 +126,33 @@ module HashModule {
     }
 
 
+    class Sha512 extends Hash {
+        private var _w = W;
+
+        private var _ah = 0x6a09e667;
+        private var _bh = 0xbb67ae85;
+        private var _ch = 0x3c6ef372;
+        private var _dh = 0xa54ff53a;
+        private var _eh = 0x510e527f;
+        private var _fh = 0x9b05688c;
+        private var _gh = 0x1f83d9ab;
+        private var _hh = 0x5be0cd19;
+
+        private var _al = 0xf3bcc908;
+        private var _bl = 0x84caa73b;
+        private var _cl = 0xfe94f82b;
+        private var _dl = 0x5f1d36f1;
+        private var _el = 0xade682d1;
+        private var _fl = 0x2b3e6c1f;
+        private var _gl = 0xfb41bd6b;
+        private var _hl = 0x137e2179;
+
+        function initialize() {
+            Hash.initialize(128, 112);
+        }
+    }
+
+
     (:glance)
     class SubClassException extends Lang.Exception {
         var _msg;
