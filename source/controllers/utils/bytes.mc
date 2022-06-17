@@ -144,6 +144,30 @@ module BytesModule {
     }
 
     (:glance)
+    function writeInt64BE (source as ByteArray, h, l, offset) {
+        var newSource = writeUint32BE(source, h, offset);
+        return writeUint32BE(newSource, l, offset + 4);
+    }
+
+    (:glance)
+    function readInt32BE(source as ByteArray, offset) {
+        offset = offset >> 0;
+        length = source.size();
+
+        if ((offset % 1) != 0 || offset < 0) {
+            throw new RangeErrorException("offset is not uint");
+        }
+        if (offset + 4 > length) {
+            throw new RangeErrorException("Trying to access beyond buffer length");
+        }
+
+        return (source[offset] << 24) |
+            (source[offset + 1] << 16) |
+            (source[offset + 2] << 8) |
+            (source[offset + 3]);
+    }
+
+    (:glance)
     function xorArray(source as ByteArray, target as ByteArray, length) {
         var newTarget = target;
 

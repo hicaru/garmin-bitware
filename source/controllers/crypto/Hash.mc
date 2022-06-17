@@ -50,6 +50,42 @@ module HashModule {
     ];
     var W = new [160];
 
+    function Ch(x, y, z) {
+        return z ^ (x & (y ^ z));
+    }
+
+    function maj(x, y, z) {
+        return (x & y) | (z & (x | y));
+    }
+
+    function sigma0(x, xl) {
+        return (x >> 28 | xl << 4) ^ (xl >> 2 | x << 30) ^ (xl >> 7 | x << 25);
+    }
+
+    function sigma1(x, xl) {
+        return (x >> 14 | xl << 18) ^ (x >> 18 | xl << 14) ^ (xl >> 9 | x << 23);
+    }
+
+    function Gamma0(x, xl) {
+        return (x >> 1 | xl << 31) ^ (x >> 8 | xl << 24) ^ (x >> 7);
+    }
+
+    function Gamma0l(x, xl) {
+        return (x >> 1 | xl << 31) ^ (x >> 8 | xl << 24) ^ (x >> 7 | xl << 25);
+    }
+
+    function Gamma1(x, xl) {
+        return (x >> 19 | xl << 13) ^ (xl >> 29 | x << 3) ^ (x >> 6);
+    }
+
+    function Gamma1l(x, xl) {
+        return (x >> 19 | xl << 13) ^ (xl >> 29 | x << 3) ^ (x >> 6 | xl << 26);
+    }
+
+    function getCarry(a, b) {
+        return (a >> 0) < (b >> 0) ? 1 : 0;
+    }
+
     (:glance)
     class Hash {
         private var _block as ByteArray;
@@ -149,6 +185,149 @@ module HashModule {
 
         function initialize() {
             Hash.initialize(128, 112);
+        }
+
+        function _update(M) {
+            var W = self._w;
+
+            var Wil;
+            var Wih;
+
+            var ah = self._ah | 0;
+            var bh = self._bh | 0;
+            var ch = self._ch | 0;
+            var dh = self._dh | 0;
+            var eh = self._eh | 0;
+            var fh = self._fh | 0;
+            var gh = self._gh | 0;
+            var hh = self._hh | 0;
+
+            var al = self._al | 0;
+            var bl = self._bl | 0;
+            var cl = self._cl | 0;
+            var dl = self._dl | 0;
+            var el = self._el | 0;
+            var fl = self._fl | 0;
+            var gl = self._gl | 0;
+            var hl = self._hl | 0;
+
+            for (var i = 0; i < 32; i += 2) {
+                W[i] = BytesModule.readInt32BE(M, i * 4);
+                W[i + 1] = BytesModule.readInt32BE(M, i * 4 + 4);
+            }
+
+            for (var i = 0; i < 160; i += 2) {
+                var xh = W[i - 15 * 2];
+                var xl = W[i - 15 * 2 + 1];
+                var gamma0 = Gamma0(xh, xl);
+                var gamma0l = Gamma0l(xl, xh);
+
+                xh = W[i - 2 * 2];
+                xl = W[i - 2 * 2 + 1];
+                var gamma1 = Gamma1(xh, xl);
+                var gamma1l = Gamma1l(xl, xh);
+
+                // W[i] = gamma0 + W[i - 7] + gamma1 + W[i - 16]
+                var Wi7h = W[i - 7 * 2];
+                var Wi7l = W[i - 7 * 2 + 1];
+
+                var Wi16h = W[i - 16 * 2];
+                var Wi16l = W[i - 16 * 2 + 1];
+
+                Wil = (gamma0l + Wi7l) | 0;
+                Wih = (gamma0 + Wi7h + getCarry(Wil, gamma0l)) | 0;
+
+                Wil = (Wil + gamma1l) | 0;
+                Wih = (Wih + gamma1 + getCarry(Wil, gamma1l)) | 0;
+                Wil = (Wil + Wi16l) | 0;
+                Wih = (Wih + Wi16h + getCarry(Wil, Wi16l)) | 0;
+
+                W[i] = Wih;
+                W[i + 1] = Wil;
+            }
+
+            for (var j = 0; j < 160; j += 2) {
+                Wih = W[j];
+                Wil = W[j + 1];
+
+                var majh = maj(ah, bh, ch);
+                var majl = maj(al, bl, cl);
+
+                var sigma0h = sigma0(ah, al);
+                var sigma0l = sigma0(al, ah);
+                var sigma1h = sigma1(eh, el);
+                var sigma1l = sigma1(el, eh);
+
+                // t1 = h + sigma1 + ch + K[j] + W[j]
+                var Kih = K[j];
+                var Kil = K[j + 1];
+
+                var chh = Ch(eh, fh, gh);
+                var chl = Ch(el, fl, gl);
+
+                var t1l = (hl + sigma1l) | 0;
+                var t1h = (hh + sigma1h + getCarry(t1l, hl)) | 0;
+                t1l = (t1l + chl) | 0;
+                t1h = (t1h + chh + getCarry(t1l, chl)) | 0;
+                t1l = (t1l + Kil) | 0;
+                t1h = (t1h + Kih + getCarry(t1l, Kil)) | 0;
+                t1l = (t1l + Wil) | 0;
+                t1h = (t1h + Wih + getCarry(t1l, Wil)) | 0;
+
+                // t2 = sigma0 + maj
+                var t2l = (sigma0l + majl) | 0;
+                var t2h = (sigma0h + majh + getCarry(t2l, sigma0l)) | 0;
+
+                hh = gh;
+                hl = gl;
+                gh = fh;
+                gl = fl;
+                fh = eh;
+                fl = el;
+                el = (dl + t1l) | 0;
+                eh = (dh + t1h + getCarry(el, dl)) | 0;
+                dh = ch;
+                dl = cl;
+                ch = bh;
+                cl = bl;
+                bh = ah;
+                bl = al;
+                al = (t1l + t2l) | 0;
+                ah = (t1h + t2h + getCarry(al, t1l)) | 0;
+            }
+
+            self._al = (self._al + al) | 0;
+            self._bl = (self._bl + bl) | 0;
+            self._cl = (self._cl + cl) | 0;
+            self._dl = (self._dl + dl) | 0;
+            self._el = (self._el + el) | 0;
+            self._fl = (self._fl + fl) | 0;
+            self._gl = (self._gl + gl) | 0;
+            self._hl = (self._hl + hl) | 0;
+
+            self._ah = (self._ah + ah + getCarry(self._al, al)) | 0;
+            self._bh = (self._bh + bh + getCarry(self._bl, bl)) | 0;
+            self._ch = (self._ch + ch + getCarry(self._cl, cl)) | 0;
+            self._dh = (self._dh + dh + getCarry(self._dl, dl)) | 0;
+            self._eh = (self._eh + eh + getCarry(self._el, el)) | 0;
+            self._fh = (self._fh + fh + getCarry(self._fl, fl)) | 0;
+            self._gh = (self._gh + gh + getCarry(self._gl, gl)) | 0;
+            self._hh = (self._hh + hh + getCarry(self._hl, hl)) | 0;
+        }
+
+        function _hash() {
+            var H = new [64]b;
+
+            H = BytesModule.writeInt64BE(H, self._ah, self._al, 0);
+            H = BytesModule.writeInt64BE(H, self._bh, self._bl, 8);
+            H = BytesModule.writeInt64BE(H, self._ch, self._cl, 16);
+            H = BytesModule.writeInt64BE(H, self._dh, self._dl, 24);
+            H = BytesModule.writeInt64BE(H, self._eh, self._el, 32);
+            H = BytesModule.writeInt64BE(H, self._fh, self._fl, 40);
+            H = BytesModule.writeInt64BE(H, self._gh, self._gl, 48);
+            H = BytesModule.writeInt64BE(H, self._hh, self._hl, 56);
+
+            return H;
         }
     }
 
