@@ -59,32 +59,58 @@ module HashModule {
     }
 
     function sigma0(x, xl) {
-        return (x >> 28 | xl << 4) ^ (xl >> 2 | x << 30) ^ (xl >> 7 | x << 25);
+        var h0 = BytesModule.zeroFillRightShift(x, 28);
+        var h1 = BytesModule.zeroFillRightShift(xl, 2);
+        var h3 = BytesModule.zeroFillRightShift(xl, 7);
+
+        return (h0 | xl << 4) ^ (h1 | x << 30) ^ (h3 | x << 25);
     }
 
     function sigma1(x, xl) {
-        return (x >> 14 | xl << 18) ^ (x >> 18 | xl << 14) ^ (xl >> 9 | x << 23);
+        var h0 = BytesModule.zeroFillRightShift(x, 14);
+        var h1 = BytesModule.zeroFillRightShift(x, 18);
+        var h3 = BytesModule.zeroFillRightShift(xl, 9);
+
+        return (h0 | xl << 18) ^ (h1 | xl << 14) ^ (h3 | x << 23);
     }
 
     function Gamma0(x, xl) {
-        logf(DEBUG, "$1$, $2$", [x, xl]);
-        return (x >> 1 | xl << 31) ^ (x >> 8 | xl << 24) ^ (x >> 7);
+        var h0 = BytesModule.zeroFillRightShift(x, 1);
+        var h1 = BytesModule.zeroFillRightShift(x, 8);
+        var h2 = BytesModule.zeroFillRightShift(x, 7);
+
+        return (h0 | xl << 31) ^ (h1 | xl << 24) ^ (h2);
     }
 
     function Gamma0l(x, xl) {
-        return (x >> 1 | xl << 31) ^ (x >> 8 | xl << 24) ^ (x >> 7 | xl << 25);
+        var h0 = BytesModule.zeroFillRightShift(x, 1);
+        var h1 = BytesModule.zeroFillRightShift(x, 8);
+        var h2 = BytesModule.zeroFillRightShift(x, 7);
+
+        return (h0 | xl << 31) ^ (h1 | xl << 24) ^ (h2 | xl << 25);
     }
 
     function Gamma1(x, xl) {
-        return (x >> 19 | xl << 13) ^ (xl >> 29 | x << 3) ^ (x >> 6);
+        var h0 = BytesModule.zeroFillRightShift(x, 19);
+        var h1 = BytesModule.zeroFillRightShift(xl, 29);
+        var h2 = BytesModule.zeroFillRightShift(x, 6);
+
+        return (h0 | xl << 13) ^ (h1 | x << 3) ^ (h2);
     }
 
     function Gamma1l(x, xl) {
-        return (x >> 19 | xl << 13) ^ (xl >> 29 | x << 3) ^ (x >> 6 | xl << 26);
+        var h0 = BytesModule.zeroFillRightShift(x, 19);
+        var h1 = BytesModule.zeroFillRightShift(xl, 29);
+        var h2 = BytesModule.zeroFillRightShift(x, 6);
+
+        return (h0 | xl << 13) ^ (h1 | x << 3) ^ (h2 | xl << 26);
     }
 
     function getCarry(a, b) {
-        return (a >> 0) < (b >> 0) ? 1 : 0;
+        var h0 = BytesModule.zeroFillRightShift(a, 0);
+        var h1 = BytesModule.zeroFillRightShift(b, 0);
+
+        return (h0) < (h1) ? 1 : 0;
     }
 
 
@@ -151,26 +177,29 @@ module HashModule {
                 W[i] = BytesModule.readInt32BE(M, i * 4);
                 W[i + 1] = BytesModule.readInt32BE(M, i * 4 + 4);
             }
-            
+
             for (; i < 160; i += 2) {
-                var xh = W[i - 15 * 2];
-                var xl = W[i - 15 * 2 + 1];
-                var gamma0 = Gamma0(xh, xl);
-                var gamma0l = Gamma0l(xl, xh);
+                var xh = W[i - 15 * 2].toNumber();
+                var xl = W[i - 15 * 2 + 1].toNumber();
+                var gamma0 = Gamma0(xh, xl).toNumber();
+                var gamma0l = Gamma0l(xl, xh).toNumber();
 
-                // logf(DEBUG, "index: $1$, gamma0: $2$, gamma0l: $3$", [i, gamma0, gamma0l]);
+                // if (i == 54) {
+                //     // log(DEBUG, W);
+                //     // logf(DEBUG, "index: $1$, gamma1: $2$, gamma1l: $3$", [i, xh, xl]);
+                // }
 
-                xh = W[i - 2 * 2];
-                xl = W[i - 2 * 2 + 1];
-                var gamma1 = Gamma1(xh, xl);
-                var gamma1l = Gamma1l(xl, xh);
+                xh = W[i - 2 * 2].toNumber();
+                xl = W[i - 2 * 2 + 1].toNumber();
+                var gamma1 = Gamma1(xh, xl).toNumber();
+                var gamma1l = Gamma1l(xl, xh).toNumber();
 
                 // W[i] = gamma0 + W[i - 7] + gamma1 + W[i - 16]
-                var Wi7h = W[i - 7 * 2];
-                var Wi7l = W[i - 7 * 2 + 1];
+                var Wi7h = W[i - 7 * 2].toNumber();
+                var Wi7l = W[i - 7 * 2 + 1].toNumber();
 
-                var Wi16h = W[i - 16 * 2];
-                var Wi16l = W[i - 16 * 2 + 1];
+                var Wi16h = W[i - 16 * 2].toNumber();
+                var Wi16l = W[i - 16 * 2 + 1].toNumber();
 
                 Wil = (gamma0l + Wi7l) | 0;
                 Wih = (gamma0 + Wi7h + getCarry(Wil, gamma0l)) | 0;
