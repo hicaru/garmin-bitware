@@ -184,11 +184,6 @@ module HashModule {
                 var gamma0 = Gamma0(xh, xl).toNumber();
                 var gamma0l = Gamma0l(xl, xh).toNumber();
 
-                // if (i == 54) {
-                //     // log(DEBUG, W);
-                //     // logf(DEBUG, "index: $1$, gamma1: $2$, gamma1l: $3$", [i, xh, xl]);
-                // }
-
                 xh = W[i - 2 * 2].toNumber();
                 xl = W[i - 2 * 2 + 1].toNumber();
                 var gamma1 = Gamma1(xh, xl).toNumber();
