@@ -148,15 +148,22 @@ module BytesModule {
         offset = offset >> 0;
 
         if (value < 0) {
-            value = 0xffffffff + value + 1;
+            value = 0xffffffffl + value + 1;
         }
 
-        source[offset] = (value >> 24);
-        source[offset + 1] = (value >> 16);
-        source[offset + 2] = (value >> 8);
+        source[offset] = getInt64Bytes(value, 24);
+        source[offset + 1] = getInt64Bytes(value, 16);
+        source[offset + 2] = getInt64Bytes(value, 8);
         source[offset + 3] = (value & 0xff);
 
         return source;
+    }
+
+    (:glance)
+    function getInt64Bytes(value, n) {
+        value = zeroFillRightShift(value, n);
+        value = value.toNumber() << 24;
+        return zeroFillRightShift(value, 24);
     }
 
     (:glance)
@@ -165,7 +172,7 @@ module BytesModule {
         var bigArray64 = new [length];
 
         for (var i = 0; i < length; i++) {
-            bigArray64[i] = source[i].toLong();
+            bigArray64[i] = source[i].toNumber();
         }
 
         var newSource = writeInt32BE(bigArray64, h, offset);

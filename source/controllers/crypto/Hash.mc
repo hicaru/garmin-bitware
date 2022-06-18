@@ -209,16 +209,16 @@ module HashModule {
             }
 
             for (var j = 0; j < 160; j += 2) {
-                Wih = W[j];
-                Wil = W[j + 1];
+                Wih = W[j].toNumber();
+                Wil = W[j + 1].toNumber();
 
-                var majh = maj(ah, bh, ch);
-                var majl = maj(al, bl, cl);
+                var majh = maj(ah, bh, ch).toNumber();
+                var majl = maj(al, bl, cl).toNumber();
 
-                var sigma0h = sigma0(ah, al);
-                var sigma0l = sigma0(al, ah);
-                var sigma1h = sigma1(eh, el);
-                var sigma1l = sigma1(el, eh);
+                var sigma0h = sigma0(ah, al).toNumber();
+                var sigma0l = sigma0(al, ah).toNumber();
+                var sigma1h = sigma1(eh, el).toNumber();
+                var sigma1l = sigma1(el, eh).toNumber();
 
                 // t1 = h + sigma1 + ch + K[j] + W[j]
                 var Kih = K[j];
@@ -280,9 +280,6 @@ module HashModule {
         private function _hash() {
             var H = new [64]b;
 
-            // TODO
-            // Error: Unhandled Exception
-            // Exception: Number is too large to fit within a byte
             H = BytesModule.writeInt64BE(H, self._ah, self._al, 0);
             H = BytesModule.writeInt64BE(H, self._bh, self._bl, 8);
             H = BytesModule.writeInt64BE(H, self._ch, self._cl, 16);
