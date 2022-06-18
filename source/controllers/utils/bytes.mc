@@ -132,7 +132,7 @@ module BytesModule {
     }
 
     (:glance)
-    function writeUint32BE(source as ByteArray, value, offset) {
+    function writeUint32BE(source, value, offset) {
         offset = offset >> 0;
 
         source[offset] = (value >> 24);
@@ -144,9 +144,32 @@ module BytesModule {
     }
 
     (:glance)
-    function writeInt64BE (source as ByteArray, h, l, offset) {
-        var newSource = writeUint32BE(source, h, offset);
-        return writeUint32BE(newSource, l, offset + 4);
+    function writeInt32BE(source, value, offset) {
+        offset = offset >> 0;
+
+        if (value < 0) {
+            value = 0xffffffff + value + 1;
+        }
+
+        source[offset] = (value >> 24);
+        source[offset + 1] = (value >> 16);
+        source[offset + 2] = (value >> 8);
+        source[offset + 3] = (value & 0xff);
+
+        return source;
+    }
+
+    (:glance)
+    function writeInt64BE(source as ByteArray, h, l, offset) {
+        var length = source.size();
+        var bigArray64 = new [length];
+
+        for (var i = 0; i < length; i++) {
+            bigArray64[i] = source[i].toLong();
+        }
+
+        var newSource = writeInt32BE(bigArray64, h, offset);
+        return writeInt32BE(newSource, l, offset + 4);
     }
 
     (:glance)
@@ -176,6 +199,15 @@ module BytesModule {
         }
 
         return newTarget;
+    }
+
+    (:glance)
+    function zeroFillRightShift(val, n) {
+        if (val >= 0) {
+            return (val >> n);
+        } else {
+            return ((val + 0x100000000l) >> n);
+        }
     }
 
     (:glance)

@@ -22,12 +22,13 @@ class BitWareApp extends Application.AppBase {
     function onStart(state) {
         log(DEBUG, "App onStart");
         
-        var hash = new HashModule.Sha512();
-        var secret = BytesModule.base16ToBytes("80000000000000000000000000000080");
+        // var hash = new HashModule.Sha512();
+        // var secret = [48,223,230,71,64,237,69,158,161,21,181,23,189,115,123,186,223,33,184,56]b;
 
-        hash.update(secret);
+        // hash.update(secret);
+        // var bytes = hash.digest();
 
-        var bytes = hash.digest();
+        var bytes = BytesModule.zeroFillRightShift(-9, 2);
 
         log(DEBUG, bytes);
 

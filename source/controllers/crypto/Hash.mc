@@ -67,6 +67,7 @@ module HashModule {
     }
 
     function Gamma0(x, xl) {
+        logf(DEBUG, "$1$, $2$", [x, xl]);
         return (x >> 1 | xl << 31) ^ (x >> 8 | xl << 24) ^ (x >> 7);
     }
 
@@ -150,12 +151,14 @@ module HashModule {
                 W[i] = BytesModule.readInt32BE(M, i * 4);
                 W[i + 1] = BytesModule.readInt32BE(M, i * 4 + 4);
             }
-
+            
             for (; i < 160; i += 2) {
                 var xh = W[i - 15 * 2];
                 var xl = W[i - 15 * 2 + 1];
                 var gamma0 = Gamma0(xh, xl);
                 var gamma0l = Gamma0l(xl, xh);
+
+                // logf(DEBUG, "index: $1$, gamma0: $2$, gamma0l: $3$", [i, gamma0, gamma0l]);
 
                 xh = W[i - 2 * 2];
                 xl = W[i - 2 * 2 + 1];
@@ -253,10 +256,9 @@ module HashModule {
         private function _hash() {
             var H = new [64]b;
 
-
-// TODO
-// Error: Unhandled Exception
-// Exception: Number is too large to fit within a byte
+            // TODO
+            // Error: Unhandled Exception
+            // Exception: Number is too large to fit within a byte
             H = BytesModule.writeInt64BE(H, self._ah, self._al, 0);
             H = BytesModule.writeInt64BE(H, self._bh, self._bl, 8);
             H = BytesModule.writeInt64BE(H, self._ch, self._cl, 16);
@@ -301,7 +303,7 @@ module HashModule {
 
             // zero (rem + 1) trailing bits, where (rem + 1) is the smallest
             // non-negative solution to the equation (length + 1 + (rem + 1)) === finalSize mod blockSize
-            self._block = BytesModule.fillArray(self._block, rem + 1, 0, self._block.size());
+            self._block = BytesModule.fillArray(self._block, 0, rem + 1, self._block.size());
 
             if (rem >= self._finalSize) {
                 self._update(self._block);

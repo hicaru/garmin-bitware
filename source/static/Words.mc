@@ -1,3 +1,5 @@
+const MAX_INT_32 = 2147483647;
+
 const WORD_LIST = [
   "abandon",
   "ability",
