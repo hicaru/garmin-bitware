@@ -12,13 +12,14 @@ using CryptoModule;
 class MnemonicView extends WatchUi.View {
     var screen_shape;
 
-    private var _type = MNEMONIC;
+    private var _type = START;
 
     private var _mnemonicBytes as ByteArray;
 
     enum {
         MNEMONIC,
-        NONE
+        NONE,
+        START
     }
 
 
@@ -39,15 +40,16 @@ class MnemonicView extends WatchUi.View {
                 self._generateMnemonic();
                 break;
             default:
-                break;
+                self._type = MNEMONIC;
+                return;
         }
 
         log(DEBUG, self._mnemonicBytes);
     }
 
     private function _generateMnemonic() {
-        // var entropy = Cryptography.randomBytes(16l);
-        var entropy = [57, 48, 140, 37, 175, 232, 112, 219, 177, 244, 11, 56, 191, 73, 190, 26]b;
+        // 16 - 12 words, 32 - 24 words.
+        var entropy = Cryptography.randomBytes(16l);
         var words = BIP39Module.entropyToMnemonic(entropy);
 
         self._type = NONE;
