@@ -46,7 +46,6 @@ module BIP39Module {
         return words;
     }
 
-
     (:glance)
     function entropyToMnemonic(entropy as ByteArray) {
         var entropySize = entropy.size();

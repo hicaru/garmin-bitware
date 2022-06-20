@@ -6,6 +6,8 @@
 
 using Toybox.Application;
 using Toybox.Cryptography;
+using Toybox.StringUtil;
+
 using BytesModule;
 using CryptoModule;
 using BIP39Module;
@@ -21,16 +23,26 @@ class BitWareApp extends Application.AppBase {
     // onStart() is called on application start up
     function onStart(state) {
         log(DEBUG, "App onStart");
+
+         var toArray = {
+            :fromRepresentation => StringUtil.REPRESENTATION_STRING_PLAIN_TEXT,
+            :toRepresentation => StringUtil.REPRESENTATION_BYTE_ARRAY,
+            :encoding => StringUtil.CHAR_ENCODING_UTF8
+        };
+        var seed = "album shy marriage excite wrist multiply want remind tower gun private soup";
+        var bytes = StringUtil.convertEncodedString(seed, toArray);
+
+        log(DEBUG, bytes);
         
-        var hash = new HashModule.Sha512();
-        var secret = [7,218,61,69,176,241,57,0,131,9,122,149,168,145,95,194,246,176,108,111]b;
+        // var hash = new HashModule.Sha512();
+        // var secret = [7,218,61,69,176,241,57,0,131,9,122,149,168,145,95,194,246,176,108,111]b;
 
-        hash.update(secret);
-        var bytes = hash.digest();
+        // hash.update(secret);
+        // var bytes = hash.digest();
 
-        // var bytes = BytesModule.zeroFillRightShift(-9, 2);
+        // // var bytes = BytesModule.zeroFillRightShift(-9, 2);
 
-        log(DEBUG, BytesModule.bytesToBase16(bytes));
+        // log(DEBUG, BytesModule.bytesToBase16(bytes));
 
 
         // var entropy = Cryptography.randomBytes(32l);

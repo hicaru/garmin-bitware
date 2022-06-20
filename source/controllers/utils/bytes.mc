@@ -229,6 +229,16 @@ module BytesModule {
     }
 
     (:glance)
+    function strToBytes(value as String) {
+        var toArray = {
+            :fromRepresentation => StringUtil.REPRESENTATION_STRING_PLAIN_TEXT,
+            :toRepresentation => StringUtil.REPRESENTATION_BYTE_ARRAY,
+            :encoding => StringUtil.CHAR_ENCODING_UTF8
+        };
+        return StringUtil.convertEncodedString(value, toArray);
+    }
+
+    (:glance)
     class UnexpectedSymbolException extends Lang.Exception {
         var _symbol;
 

@@ -1,5 +1,11 @@
 const MAX_INT_32 = 2147483647;
 
+const MNEMONIC_SALT = [
+  109, 110, 101,
+  109, 111, 110,
+  105,  99
+]b;
+
 const WORD_LIST = [
   "abandon",
   "ability",
@@ -2050,3 +2056,4 @@ const WORD_LIST = [
   "zone",
   "zoo"
 ];
+
