@@ -15,6 +15,7 @@ using CryptoModule;
 
 class Bip39View extends WatchUi.View {
     private const _steps = 20;
+    private const _max_iteractions = 824;
     private var _type = POS;
     var screen_shape;
 
@@ -33,7 +34,7 @@ class Bip39View extends WatchUi.View {
     private var _destPos = 0;
     private var _next_index = 1;
     private var _iterations_index = 1;
-    private var _max = self._iterations * self._length;
+    private var _progress_counter = 1;
     // state
 
     enum {
@@ -73,18 +74,21 @@ class Bip39View extends WatchUi.View {
 
         dc.clear();
 
-        var percent = ((self._next_index * self._iterations * 100) / self._max);
         drawProgress(
             dc,
-            percent,
+            (self._progress_counter * 100) / self._max_iteractions + 1,
             100,
             Graphics.COLOR_BLUE
         );
-        dc.drawText(
-            dc.getWidth() / 2, dc.getHeight() / 2, Graphics.FONT_MEDIUM,
-            "Loading...",
-            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
-        );
+
+        if (self._progress_counter == 1) {
+            dc.drawText(
+                dc.getWidth() / 2, dc.getHeight() / 2, Graphics.FONT_MEDIUM,
+                "Loading...",
+                Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+            );
+        }
+        self._progress_counter++;
     }
 
     function drawProgress(dc, value, max, codeColor) {
