@@ -26,8 +26,8 @@ class Bip39View extends WatchUi.View {
     private var _block1 as ByteArray;
     private var _T as ByteArray;
     private var _U as ByteArray;
-    private var _hLen = 32;
-    private var _keylen = 256;
+    private var _hLen = 64;
+    private var _keylen = 512;
     private var _iterations = 2048;
     private var _length = Math.ceil(self._keylen / self._hLen);
 
@@ -46,11 +46,16 @@ class Bip39View extends WatchUi.View {
     function initialize() {
         View.initialize();
         screen_shape = System.getDeviceSettings().screenShape;
+
+        var mnemonic = "album shy marriage excite wrist multiply want remind tower gun private soup";
+
         self._DK = new [self._keylen]b;
-        self._salt = [48, 223, 230, 71, 64, 237, 69, 158, 161, 21, 181, 23, 189, 115, 123, 186, 223, 33, 184, 56]b;
-        self._password = [7, 218, 61, 69, 176, 241, 57, 0, 131, 9, 122, 149, 168, 145, 95, 194, 246, 176, 108, 111]b;
+        self._salt = MNEMONIC_SALT;
+        self._password = BytesModule.strToBytes(mnemonic);
         self._block1 = new [self._salt.size() + 4]b;
         self._block1 = BytesModule.bufferCopy(self._salt, self._block1, 0, 0, self._salt.size());
+
+        // log(DEBUG, CryptoModule.hmac512(self._password, self._block1));
     }
 
     function onShow() {
@@ -114,7 +119,7 @@ class Bip39View extends WatchUi.View {
         var counter = 0;
 
         for (var j = 1; self._iterations_index < self._iterations; self._iterations_index++) {
-            self._U = CryptoModule.hmacSHA2(self._password, self._U);
+            self._U = CryptoModule.hmac(self._password, self._U);
 
             counter++;
 
@@ -140,7 +145,7 @@ class Bip39View extends WatchUi.View {
     private function _nextDestPost() {
         if (self._next_index <= self._length) {
             self._block1 = BytesModule.writeUint32BE(self._block1, self._next_index, self._salt.size());
-            self._T = CryptoModule.hmacSHA2(self._password, self._block1);
+            self._T = CryptoModule.hmac(self._password, self._block1);
             self._U = self._T;
             self._type = BLOCK;
 

@@ -151,10 +151,10 @@ module BytesModule {
             value = 0xffffffffl + value + 1;
         }
 
-        source[offset] = getInt64Bytes(value, 24);
-        source[offset + 1] = getInt64Bytes(value, 16);
-        source[offset + 2] = getInt64Bytes(value, 8);
-        source[offset + 3] = (value & 0xff);
+        source[offset] = getInt64Bytes(value, 24).toNumber();
+        source[offset + 1] = getInt64Bytes(value, 16).toNumber();
+        source[offset + 2] = getInt64Bytes(value, 8).toNumber();
+        source[offset + 3] = (value & 0xff).toNumber();
 
         return source;
     }

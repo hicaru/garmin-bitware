@@ -6,6 +6,7 @@ using Toybox.Math;
 using Toybox.Test;
 
 using BytesModule;
+using HashModule;
 
 
 module CryptoModule {
@@ -37,10 +38,17 @@ module CryptoModule {
     }
 
     (:glance)
-    function hmacSHA2(key, text) {
+    function sha512(bytes) {
+        var hash = new HashModule.Sha512();
+        hash.update(bytes);
+        return hash.digest();
+    }
+
+    (:glance)
+    function hmac(key, text) {
         var BS = 64;
         if (key.size() > BS) {
-            key = sha256(key);
+            key = sha512(key);
         }
 
         // MAC = H(K XOR opad, H(K XOR ipad, text))
@@ -48,12 +56,12 @@ module CryptoModule {
         var key_opad = new [BS]b;
 
         for (var i = 0; i < BS; i++) {
-            var k = i < key.size() ? key[i] : 0x00;
+            var k = i < key.size() ? key[i].toNumber() : 0x00;
             key_ipad[i] = k ^ 0x36;
             key_opad[i] = k ^ 0x5C;
         }
 
-        return sha256(key_opad.addAll(sha256(key_ipad.addAll(text))));
+        return sha512(key_opad.addAll(sha512(key_ipad.addAll(text))));
     }
 
     (:glance)
@@ -61,7 +69,7 @@ module CryptoModule {
         Test.assert(keylen > 0);
         Test.assert(keylen < MAX_ALLOC);
 
-        var hLen = 32;
+        var hLen = 64;
 
         var DK = new [keylen]b;
         var block1 = new [salt.size() + 4]b;
@@ -74,11 +82,11 @@ module CryptoModule {
         for (var i = 1; i <= l; i++) {
             block1 = BytesModule.writeUint32BE(block1, i, salt.size());
 
-            var T = hmacSHA2(password, block1);
+            var T = hmac(password, block1);
             var U = T;
 
             for (var j = 1; j < iterations; j++) {
-                U = hmacSHA2(password, U);
+                U = hmac(password, U);
                 for (var k = 0; k < hLen; k++) {
                     T[k] ^= U[k];
                 }
