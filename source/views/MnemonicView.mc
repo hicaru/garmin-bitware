@@ -1,8 +1,9 @@
 using Toybox.WatchUi;
 using Toybox.Graphics;
-using Toybox.Math;
 using Toybox.System;
 using Toybox.Cryptography;
+using Toybox.Math;
+using Toybox.Test;
 
 using BIP39Module;
 using BytesModule;
@@ -77,6 +78,53 @@ class Hmac512Async {
         }
 
         return;
+    }
+}
+
+
+class Pbkdf2Async {
+    public const hLen = 64; // 64 bytes len
+
+    private var _password as ByteArray;
+    private var _salt as ByteArray;
+    private var _iterations as Number;
+    private var _keylen as Number;
+
+    private var _DK as ByteArray;
+    private var _block1 as ByteArray;
+    private var _length as Number;
+
+    private var _destPos = 0;
+
+    enum {
+        STEP0
+    }
+
+    function initialize(
+        password as ByteArray,
+        salt as ByteArray,
+        iterations as Number,
+        keylen as Number
+    ) {
+        Test.assert(keylen > 0);
+        Test.assert(keylen < MAX_ALLOC);
+
+        self._password = password;
+        self._salt = salt;
+        self._iterations = iterations;
+        self._keylen = keylen;
+
+        self._length = Math.ceil(keylen / self.hLen);
+        self._DK = new [keylen]b;
+        self._block1 = new [salt.size() + 4]b;
+        self._block1 = BytesModule.bufferCopy(salt, self._block1, 0, 0, salt.size());
+    }
+
+    public function start() {
+        switch(self._type) {
+            case STEP0:
+                return;
+        }
     }
 }
 
