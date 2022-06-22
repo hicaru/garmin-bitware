@@ -7,13 +7,17 @@ using Toybox.Cryptography;
 using BIP39Module;
 using BytesModule;
 using CryptoModule;
+using HashModule;
 
 
 class Hmac512Async {
     private var _type = START;
     private var _blocksize = 128;
+    private var _hash = new HashModule.Sha512();
     private var _key_ipad = new [self._blocksize]b;
     private var _key_opad = new [self._blocksize]b;
+
+    private var _tmp as ByteArray;
 
     public var key as ByteArray;
     public var data as ByteArray;
@@ -22,6 +26,7 @@ class Hmac512Async {
     enum {
         START,
         MIDDLE,
+        MIDDLE_HASH,
         END
     }
 
@@ -42,23 +47,28 @@ class Hmac512Async {
 
     public function nextStep() {
         switch(self._type) {
+            case MIDDLE_HASH:
+                self._tmp = self._hash.digest();
+                self._hash = new HashModule.Sha512();
+                self._type = MIDDLE;
+                return;
             case START:
                 for (var i = 0; i < self._blocksize; i++) {
                     var k = i < self.key.size() ? self.key[i].toNumber() : 0x00;
                     self._key_ipad[i] = k ^ 0x36;
                     self._key_opad[i] = k ^ 0x5C;
                 }
-                self._type = MIDDLE;
+                self._hash.update(self._key_ipad.addAll(self.data));
+                self._type = MIDDLE_HASH;
                 return;
             case MIDDLE:
-                log(DEBUG, CryptoModule.sha512(new [120]b));
-                // CryptoModule.sha512(self._key_ipad.addAll(self.data));
-                // self._key_opad = self._key_opad.addAll(CryptoModule.sha512(self._key_ipad.addAll(self.data)));
+                self._key_opad = self._key_opad.addAll(self._tmp);
+                self._hash.update(self._key_opad);
                 self._type = END;
+                self._tmp = new [0]b;
                 return;
             case END:
-                // self.hmac = CryptoModule.sha512(self._key_opad);
-                self.hmac = new [10]b;
+                self.hmac = self._hash.digest();
                 return;
             default:
                 // Throw new 
@@ -102,8 +112,8 @@ class MnemonicView extends WatchUi.View {
                 if (self._hmac.getHmac() == null) {
                     self._hmac.nextStep();
                     WatchUi.requestUpdate();
-                    log(DEBUG, "self._hmac.hmac");
                 } else {
+                    log(DEBUG, self._hmac.hmac);
                     self._type = NONE;
                 }
                 break;
