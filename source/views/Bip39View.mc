@@ -123,7 +123,7 @@ class Bip39View extends WatchUi.View {
 
             counter++;
 
-            self._T = BytesModule.xorArray(self._U, self._T, self._hLen);
+            self._T = BytesModule.xorArray(self._U, self._T, self.hLen);
 
             if (counter >= self._steps) {
                 self._iterations_index++;
@@ -133,7 +133,7 @@ class Bip39View extends WatchUi.View {
 
         if (self._iterations_index == self._iterations) {
             self._DK = BytesModule.bufferCopy(self._T, self._DK, self._destPos, 0, self._T.size());
-            self._destPos += self._hLen;
+            self._destPos += self.hLen;
             self._next_index++;
             self._iterations_index = 1; // reset index
             self._type = POS;

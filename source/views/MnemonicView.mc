@@ -90,14 +90,26 @@ class Pbkdf2Async {
     private var _iterations as Number;
     private var _keylen as Number;
 
+    private var _T as ByteArray;
+    private var _U as ByteArray;
+
     private var _DK as ByteArray;
     private var _block1 as ByteArray;
     private var _length as Number;
 
+    private var _hmac as Hmac512Async;
+
     private var _destPos = 0;
+    private var _next_index = 1;
+    private var _iterations_index = 1;
+    private var _type = STEP0;
 
     enum {
-        STEP0
+        STEP0, // create block and first step hmac.
+        STEP1, // finish create hmac.
+        STEP2, // start mix bytes.
+        STEP3, // finish mix bytes.
+        DONE
     }
 
     function initialize(
@@ -107,7 +119,7 @@ class Pbkdf2Async {
         keylen as Number
     ) {
         Test.assert(keylen > 0);
-        Test.assert(keylen < MAX_ALLOC);
+        Test.assert(keylen < CryptoModule.MAX_ALLOC);
 
         self._password = password;
         self._salt = salt;
@@ -120,28 +132,106 @@ class Pbkdf2Async {
         self._block1 = BytesModule.bufferCopy(salt, self._block1, 0, 0, salt.size());
     }
 
+    public function getResult() {
+        if (self._type == DONE) {
+            return self._DK;
+        }
+
+        return null;
+    }
+
     public function start() {
+        if (self._type == STEP2 || self._type == STEP3) {
+            self._mixBytes();
+
+            return;
+        }
+
+        if (self._next_index <= self._length) {
+            switch(self._type) {
+                case STEP0:
+                    self._block1 = BytesModule.writeUint32BE(
+                        self._block1,
+                        self._next_index,
+                        self._salt.size()
+                    );
+                    self._hmac = new Hmac512Async(self._password, self._block1);
+                    self._hmac.nextStep();
+                    self._type = STEP1;
+                    return;
+                case STEP1:
+                    var hmcaHash = self._hmac.getHmac();
+                    if (hmcaHash != null) {
+                        self._T = hmcaHash;
+                        self._U = self._T;
+                        self._type = STEP2;
+                        self._mixBytes();
+                    } else {
+                        self._hmac.nextStep();
+                    }
+                    return;
+            }
+        } else {
+            // STOP loop.
+            self._type = DONE;
+            self._U = new [0];
+            self._T = new [0];
+            self._block1 = new [0];
+        }
+
+        return;
+    }
+
+    private function _xorBytes() {
         switch(self._type) {
-            case STEP0:
+            case STEP2:
+                self._hmac = new Hmac512Async(self._password, self._U);
+                self._type = STEP3;
+                self._hmac.nextStep();
                 return;
+            case STEP3:
+                var hmacHash = self._hmac.getHmac();
+                if (hmacHash != null) {
+                    self._U = hmacHash;
+                    self._T = BytesModule.xorArray(self._U, self._T, self.hLen);
+                    self._type = STEP2;
+                    self._iterations_index++;
+                } else {
+                    self._hmac.nextStep();
+                }
+                return;
+        }
+    }
+
+    private function _mixBytes() {
+        self._xorBytes();
+
+        if (self._iterations_index == self._iterations) {
+            self._DK = BytesModule.bufferCopy(self._T, self._DK, self._destPos, 0, self._T.size());
+            self._destPos += self.hLen;
+            self._next_index++;
+            self._iterations_index = 1; // reset index
+            self._type = STEP0; // next step
         }
     }
 }
 
 class MnemonicView extends WatchUi.View {
+    private const _max_interactions = 10242f;
+
     private var _type = START;
 
-    private var _hmac as Hmac512Async;
+    private var _pbkdf2 as Pbkdf2Async;
 
     var screen_shape;
     private var _mnemonicBytes as ByteArray;
-
+    private var _counter = 0f;
 
     enum {
         MNEMONIC,
         NONE,
         START,
-        HMAC
+        PBKDF2
     }
 
 
@@ -155,16 +245,38 @@ class MnemonicView extends WatchUi.View {
     }
 
     function onUpdate(dc) {
+        self._counter++;
+
+        dc.clear();
+
+        drawProgress(
+            dc,
+            (self._counter * 100f) / self._max_interactions + 1f,
+            100,
+            Graphics.COLOR_BLUE
+        );
+
+        if (self._counter == 1) {
+            dc.drawText(
+                dc.getWidth() / 2, dc.getHeight() / 2, Graphics.FONT_MEDIUM,
+                "Loading...",
+                Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+            );
+        }
+
         switch(self._type) {
-            case HMAC:
-                if (self._hmac.getHmac() == null) {
-                    self._hmac.nextStep();
-                    WatchUi.requestUpdate();
+            case PBKDF2:
+                self._pbkdf2.start();
+                var hash = self._pbkdf2.getResult();
+                if (hash != null) {
+                    log(DEBUG, [
+                        "HASH",
+                        hash
+                    ]);
                 } else {
-                    log(DEBUG, self._hmac.hmac);
-                    self._type = NONE;
+                    WatchUi.requestUpdate();
                 }
-                break;
+                return;
             case NONE:
                 break;
             case MNEMONIC:
@@ -178,22 +290,51 @@ class MnemonicView extends WatchUi.View {
 
     private function _generateMnemonic() {
         // 16 - 12 words, 32 - 24 words.
-        var entropy = Cryptography.randomBytes(16l);
+        // var entropy = Cryptography.randomBytes(16l);
+        var entropy = [57, 48, 140, 37, 175, 232, 112, 219, 177, 244, 11, 56, 191, 73, 190, 26]b;
         var words = BIP39Module.entropyToMnemonic(entropy);
+
+        log(DEBUG, [
+            "WORDS",
+            words
+        ]);
 
         self._mnemonicBytes = BytesModule.strToBytes(words);
 
-        self._startHmac();
+        self._startPbkdf2();
 
-        self._type = HMAC;
+        self._type = PBKDF2;
 
         WatchUi.requestUpdate();
     }
 
-    private function _startHmac() {
-        var key = [38, 149, 136,  96,  85, 140,  82,  12, 125, 201,  62]b;
-        var data = [206, 146, 116, 255, 135, 129, 195,  47,  55,  16, 106]b;
-
-        self._hmac = new Hmac512Async(key, data);
+    private function _startPbkdf2() {
+        self._pbkdf2 = new Pbkdf2Async(
+            self._mnemonicBytes,
+            SALT,
+            2048,
+            64
+        );
     }
+
+    /// views
+    function drawProgress(dc, value, max, codeColor) {
+        dc.setPenWidth(dc.getHeight() / 40);
+        dc.setColor(codeColor, Graphics.COLOR_TRANSPARENT);
+        if (self.screen_shape == System.SCREEN_SHAPE_ROUND) {
+            // Available from 3.2.0
+            if (dc has :setAntiAlias) {
+                dc.setAntiAlias(true);
+            }
+
+            dc.drawArc(dc.getWidth() / 2, dc.getHeight() / 2, (dc.getWidth() / 2) - 2, Graphics.ARC_COUNTER_CLOCKWISE, 90, ((value * 360) / max) + 90);
+            // Available from 3.2.0
+            if (dc has :setAntiAlias) {
+                dc.setAntiAlias(false);
+            }
+        } else {
+            dc.fillRectangle(0, 0, ((value * dc.getWidth()) / max), dc.getHeight() / 40);
+        }
+    }
+    /// views
 }
