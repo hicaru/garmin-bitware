@@ -221,6 +221,7 @@ class MnemonicView extends WatchUi.View {
     private var _type = START;
 
     private var _pbkdf2 as Pbkdf2Async;
+    private var _words as Array;
 
     var screen_shape;
     private var _mnemonicBytes as ByteArray;
@@ -234,13 +235,10 @@ class MnemonicView extends WatchUi.View {
     }
 
 
-    function initialize() {
+    function initialize(words as Array) {
         View.initialize();
         screen_shape = System.getDeviceSettings().screenShape;
-    }
-
-    function onShow() {
-        log(DEBUG, "Show MnemonicView");
+        self._words = words;
     }
 
     function onUpdate(dc) {
@@ -290,15 +288,13 @@ class MnemonicView extends WatchUi.View {
     private function _generateMnemonic() {
         // 16 - 12 words, 32 - 24 words.
         var entropy = Cryptography.randomBytes(32l);
-        var words = BIP39Module.entropyToMnemonic(entropy);
+        var mnemonic = BIP39Module.mnemonicToString(self._words);
 
-        // self._mnemonicBytes = BytesModule.strToBytes(words);
+        self._mnemonicBytes = BytesModule.strToBytes(mnemonic);
+        self._startPbkdf2();
+        self._type = PBKDF2;
 
-        // self._startPbkdf2();
-
-        // self._type = PBKDF2;
-
-        // WatchUi.requestUpdate();
+        WatchUi.requestUpdate();
     }
 
     private function _startPbkdf2() {

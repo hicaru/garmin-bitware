@@ -68,6 +68,21 @@ module BIP39Module {
         return getWords(chunks);
     }
 
+    (:glance)
+    function mnemonicToString(words as Array) {
+        var str = "";
+        var length = words.size();
+
+        for (var i = 0; i < length; i++) {
+            if (i < length - 1) {
+                str += Lang.format("$1$ ", [words[i]]);
+            } else {
+                str += words[i];
+            }
+        }
+
+        return str;
+    }
 
     (:glance)
     class EntropyException extends Lang.Exception {

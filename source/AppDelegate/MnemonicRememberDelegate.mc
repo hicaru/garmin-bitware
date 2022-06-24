@@ -8,14 +8,20 @@ class MnemonicRememberDelegate extends WatchUi.BehaviorDelegate {
         self._view = view;
     }
 
-    function onKey(event) {
+    function onKeyPressed(event) {
         var key = event.getKey();
-        // log(DEBUG, event.getKey());
 
-        if (key == KEY_UP) {
-            self._view.previousPage();
-        } else if (key == KEY_DOWN) {
-            self._view.nextPage();
+        switch(key) {
+            case WatchUi.KEY_UP:
+                self._view.previousPage();
+                break;
+            case WatchUi.KEY_DOWN:
+                self._view.nextPage();
+                break;
+            case WatchUi.KEY_ENTER:
+                var view = new MnemonicView(self._view.words);
+                WatchUi.pushView(view, new MnemonicDelegate(view), WatchUi.SLIDE_RIGHT);
+                break;
         }
     }
 
