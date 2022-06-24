@@ -38,7 +38,6 @@ class Hmac512Async {
 
         if (self.key.size() > self._blocksize) {
             self.key = CryptoModule.sha512(self.key);
-            log(DEBUG, "key.size() > self._blocksize");
         }
     }
 

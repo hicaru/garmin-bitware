@@ -24,58 +24,6 @@ class BitWareApp extends Application.AppBase {
     // onStart() is called on application start up
     function onStart(state) {
         log(DEBUG, "App onStart");
-
-        //  var toArray = {
-        //     :fromRepresentation => StringUtil.REPRESENTATION_STRING_PLAIN_TEXT,
-        //     :toRepresentation => StringUtil.REPRESENTATION_BYTE_ARRAY,
-        //     :encoding => StringUtil.CHAR_ENCODING_UTF8
-        // };
-        // var seed = "album shy marriage excite wrist multiply want remind tower gun private soup";
-        // var bytes = StringUtil.convertEncodedString(seed, toArray);
-
-        // log(DEBUG, bytes);
-        
-        // var hash = new HashModule.Sha512();
-        // var secret = [7,218,61,69,176,241,57,0,131,9,122,149,168,145,95,194,246,176,108,111]b;
-
-        // hash.update(secret);
-        // var bytes = hash.digest();
-
-        // // var bytes = BytesModule.zeroFillRightShift(-9, 2);
-
-        // log(DEBUG, BytesModule.bytesToBase16(bytes));
-
-
-        // var entropy = Cryptography.randomBytes(32l);
-        // var words = BIP39Module.entropyToMnemonic(entropy);
-
-        // log(DEBUG, words);
-
-        // log(DEBUG, checksumBits);
-
-        // var hmac = CryptoModule.hmacSHA2(secret, data);
-
-        // System.print(BytesModule.bytesToBase16(hmac));
-
-        // var secret = [7,218,61,69,176,241,57,0,131,9,122,149,168,145,95,194,246,176,108,111]b;
-        // var data = [109, 110, 101, 109, 111, 110, 105, 99]b;
-        // var hmac = CryptoModule.sha512(secret);
-        // // WatchUi.requestUpdate();
-        // // hmac = CryptoModule.sha512(secret);
-        // log(DEBUG, hmac);
-
-        // var salt = BytesModule.base16ToBytes("30dfe64740ed459ea115b517bd737bbadf21b838");
-        // var key = BytesModule.base16ToBytes("07da3d45b0f1390083097a95a8915fc2f6b06c6f");
-        // var test = CryptoModule.pbkdf2(key, salt, 1, 512);
-
-        // log(DEBUG, BytesModule.bytesToBase16(test));
-        // log(DEBUG, test);
-
-        // var salt = BytesModule.base16ToBytes("30dfe64740ed459ea115b517bd737bbadf21b838");
-        // var key = BytesModule.base16ToBytes("07da3d45b0f1390083097a95a8915fc2f6b06c6f");
-        // var test = CryptoModule.pbkdf2(key, salt, 10, 256);
-
-        // log(DEBUG, key.toString());
     }
 
     // onStop() is called when your application is exiting

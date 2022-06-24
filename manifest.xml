@@ -1,5 +1,5 @@
 <iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq" version="1">
-    <iq:application entry="BitWareApp" id="6A7111861CDD4CD4B1DE0F86DDAE1177" launcherIcon="@Drawables.LauncherIcon" minSdkVersion="1.4.0" name="@Strings.AppName" type="widget">
+    <iq:application entry="BitWareApp" id="5f42f7135cc5463a938d74faa7493ebd" launcherIcon="@Drawables.LauncherIcon" minSdkVersion="3.1.0" name="@Strings.AppName" type="widget" version="0.0.1">
         <iq:products>
             <iq:product id="fenix7x"/>
             <iq:product id="fenix6"/>

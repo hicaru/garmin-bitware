@@ -17,6 +17,8 @@ class MnemonicRememberView extends WatchUi.View {
         self._words = words;
         self._seed = seed;
         self._chunks = ArrayModule.chunk(words, 3);
+
+        log(DEBUG, self._chunks);
     }
 
     function onUpdate(dc) {
@@ -49,22 +51,24 @@ class MnemonicRememberView extends WatchUi.View {
         var width = dc.getWidth();
         var height = dc.getHeight();
         var margin = 70;
+        var length = self._chunks.size();
+        var chunk = self._chunks[self.page];
 
         dc.drawText(
             width / 2, margin, Graphics.FONT_SMALL,
-            Lang.format("#$1$ $2$", [self.page + 1, self._chunks[self.page][0]]),
+            Lang.format("#$1$ $2$", [self._words.indexOf(chunk[0]) + 1, chunk[0]]),
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
 
         dc.drawText(
             width / 2, height / 2, Graphics.FONT_LARGE,
-            Lang.format("#$1$ $2$", [self.page + 2, self._chunks[self.page][1]]),
+            Lang.format("#$1$ $2$", [self._words.indexOf(chunk[1]) + 1, chunk[1]]),
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
 
         dc.drawText(
             width / 2, height - margin, Graphics.FONT_SMALL,
-            Lang.format("#$1$ $2$", [self.page + 3, self._chunks[self.page][2]]),
+            Lang.format("#$1$ $2$", [self._words.indexOf(chunk[2]) + 1, chunk[2]]),
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
     }

@@ -1,1 +1,7 @@
 project.manifest = manifest.xml
+
+# Exclude connectiq 2.x code by default
+base.excludeAnnotations = connectiq3
+
+#base.excludeAnnotations=lowMemory
+base.excludeAnnotations=highMemory
