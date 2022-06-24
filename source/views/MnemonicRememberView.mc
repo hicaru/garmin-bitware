@@ -17,7 +17,6 @@ class MnemonicRememberView extends WatchUi.View {
         self._words = words;
         self._seed = seed;
         self._chunks = ArrayModule.chunk(words, 3);
-        log(DEBUG, self._chunks);
     }
 
     function onUpdate(dc) {
