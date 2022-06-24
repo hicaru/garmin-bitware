@@ -33,17 +33,13 @@ module BIP39Module {
     (:glance)
     function getWords(chunks as Array) {
         var length = chunks.size();
-        var words = "";
+        var words = new[0];
 
         for (var i = 0; i < length; i++) {
             var index = chunks[i].toNumberWithBase(2);
             var word = WORD_LIST[index];
             if (word != null) {
-                words += word;
-
-                if (i < length - 1) {
-                    words += " ";
-                }
+                words.add(word);
             }
         }
 

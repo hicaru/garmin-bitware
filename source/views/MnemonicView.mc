@@ -289,22 +289,16 @@ class MnemonicView extends WatchUi.View {
 
     private function _generateMnemonic() {
         // 16 - 12 words, 32 - 24 words.
-        // var entropy = Cryptography.randomBytes(16l);
-        var entropy = [57, 48, 140, 37, 175, 232, 112, 219, 177, 244, 11, 56, 191, 73, 190, 26]b;
+        var entropy = Cryptography.randomBytes(32l);
         var words = BIP39Module.entropyToMnemonic(entropy);
 
-        log(DEBUG, [
-            "WORDS",
-            words
-        ]);
+        // self._mnemonicBytes = BytesModule.strToBytes(words);
 
-        self._mnemonicBytes = BytesModule.strToBytes(words);
+        // self._startPbkdf2();
 
-        self._startPbkdf2();
+        // self._type = PBKDF2;
 
-        self._type = PBKDF2;
-
-        WatchUi.requestUpdate();
+        // WatchUi.requestUpdate();
     }
 
     private function _startPbkdf2() {

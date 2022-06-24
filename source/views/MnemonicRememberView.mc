@@ -8,14 +8,12 @@ using ArrayModule;
 class MnemonicRememberView extends WatchUi.View {
     private var _words as Array;
     private var _chunks as Array;
-    private var _seed as ByteArray;
 
     public var page = 0;
 
-    function initialize(words as Array, seed as ByteArray) {
+    function initialize(words as Array) {
         View.initialize();
         self._words = words;
-        self._seed = seed;
         self._chunks = ArrayModule.chunk(words, 3);
 
         log(DEBUG, self._chunks);
