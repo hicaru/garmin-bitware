@@ -17,8 +17,6 @@ class MnemonicRememberDelegate extends WatchUi.BehaviorDelegate {
         } else if (key == KEY_DOWN) {
             self._view.nextPage();
         }
-
-        return BehaviorDelegate.onKey(event);
     }
 
     function onSelect() {
