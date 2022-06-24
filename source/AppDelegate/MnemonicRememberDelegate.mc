@@ -9,7 +9,15 @@ class MnemonicRememberDelegate extends WatchUi.BehaviorDelegate {
     }
 
     function onKey(event) {
-        log(DEBUG, event.getKey());
+        var key = event.getKey();
+        // log(DEBUG, event.getKey());
+
+        if (key == KeyButton.UP) {
+            self._view.previousPage();
+        } else if (key == KeyButton.DOWN) {
+            self._view.nextPage();
+        }
+
         return BehaviorDelegate.onKey(event);
     }
 
